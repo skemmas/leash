@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-dark: #090b0e;
+    --card-dark: #11141a;
+    --card-border: #1e2430;
+    --accent-lime: #a3e635;
+    --accent-lime-dim: rgba(163, 230, 53, 0.12);
+  }
+
+  body {
+    background-color: #080a0e;
+    color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden;
+    selection-background-color: #a3e635;
+    selection-color: #000;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090b0e;
+}
+::-webkit-scrollbar-thumb {
+  background: #1f2532;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2a3344;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 6s ease-in-out infinite;
+}
+
+@keyframes leashWave {
+  0%, 100% {
+    d: path("M 10 10 Q 50 40 90 20 T 170 30");
+  }
+  50% {
+    d: path("M 10 10 Q 50 -10 90 30 T 170 10");
+  }
+}
