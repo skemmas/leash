@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { tokenConfig } from '../config/tokenConfig';
 
 interface FaqItem {
@@ -14,86 +14,81 @@ export const Faq: React.FC = () => {
     {
       question: 'Is LEASH free to use?',
       answer:
-        'Yes, 100% free. The Agent Permission Builder, Markdown/JSON export tools, and deterministic Policy Checker run entirely in your local browser without requiring a wallet, subscription, API key, or account.',
+        'Yes. The Permission Builder, policy exports, and deterministic validator run entirely client-side in the browser. No wallet, no subscription, and no fees are required to define or export policies.',
     },
     {
-      question: 'How does enforcement work? Does LEASH directly stop my agent?',
+      question: 'How does enforcement work? Does LEASH directly intercept my agent?',
       answer:
-        'LEASH standardizes and generates readable boundary instructions and structured schemas. However, instruction-level prompts guide the model; physical runtime enforcement depends on your agent framework, execution harness (e.g. sandbox container, OS user permissions, or proxy middleware). LEASH helps you formulate tight, unambiguous guardrails so models know what is forbidden.',
+        'LEASH generates unambiguous, standardized operational guidelines for system prompts and structured JSON schemas for runtime harnesses. While clear instructions directly constrain language model reasoning, physical runtime containment (such as blocking network sockets or file writes) depends on your execution platform, container sandbox, or proxy layer. LEASH makes your boundaries explicit so the agent knows what requires human approval.',
     },
     {
-      question: 'Is my agent prompt or data transmitted to your servers?',
+      question: 'Is any prompt or code transmitted to external servers?',
       answer:
-        'No. Zero data is transmitted. All parsing, policy generation, prompt analysis, and localStorage drafts happen 100% locally in your browser memory. We have no backend analytics, tracking pixels, or data collection servers.',
+        'No. Zero data is transmitted. All parsing, evaluation, formatting, and draft saving occur 100% locally in your browser memory (and localStorage). There are no tracking scripts, analytics cookies, or backend database calls.',
     },
     {
       question: `What is the distinction between the tool and the ${tokenConfig.ticker} token?`,
       answer:
-        `The LEASH policy tool is an open community developer utility. The ${tokenConfig.ticker} token is an experimental Solana community coin. You do not need to buy or hold ${tokenConfig.ticker} to use any of the existing builder or checker features. In future phases, token holders may access remote cloud workspace synchronization and community template registries.`,
+        `The LEASH policy tool is a functional developer utility available to everyone. The ${tokenConfig.ticker} token is an experimental Solana community coin. You do not need to hold or purchase the token to use the builder, validator, or export tools. In future phases, token verification will be used for cloud workspace synchronization and community template registries.`,
     },
     {
-      question: 'Which AI agent platforms are compatible with exported policies?',
+      question: 'Which agent frameworks support these exported policies?',
       answer:
-        'LEASH produces clean Markdown (ideal for AGENTS.md, CLAUDE.md, .cursorrules, system prompts) and documented JSON schemas. While compatible with any modern prompt-driven framework (Cursor, Claude Code, Cline, Windsurf, AutoGPT, LangChain, custom LangGraph harnesses), we do not claim universal native plugin execution on proprietary platforms.',
+        'The output follows standard Markdown (ideal for AGENTS.md, CLAUDE.md, .cursorrules, system prompts) and documented JSON schemas. They are compatible with Cursor, Claude Code, Cline, Windsurf, AutoGPT, LangChain, LangGraph, and custom Python or TypeScript agent harnesses.',
     },
     {
       question: 'Why are credentials and spending blocked by default?',
       answer:
-        'Autonomous agent failures most frequently result in leaked API tokens or unexpected API consumption. By defaulting credentials and financial actions to "Blocked", LEASH enforces a defense-in-depth posture before an operator intentionally loosens permissions.',
+        'Unbounded autonomous agents most commonly cause harm through accidental API consumption or leaked credentials (.env variables, private keys). Defaulting these to "Blocked" ensures a secure-by-default posture until an operator deliberately relaxes constraints.',
     },
   ];
 
   return (
-    <section id="faq" className="py-24 border-t border-slate-900 bg-[#080a0e] relative">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-lime-400/10 text-lime-400 border border-lime-400/20 mb-4">
-            <HelpCircle className="w-3.5 h-3.5" />
-            <span>FREQUENTLY ASKED QUESTIONS</span>
+    <section id="faq" className="border-b border-[#D5D1C3] py-10 scroll-mt-6">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-6 pb-3 border-b border-[#D5D1C3]">
+        <div>
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[#7A7F73] font-semibold">
+            Inquiries
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            Clear answers, zero hype.
+          <h2 className="text-2xl font-bold text-[#20231F] mt-1">
+            Frequently Answered Questions
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
-            Everything you need to know about our privacy architecture, enforcement boundaries, and token role.
-          </p>
         </div>
+        <span className="text-xs font-mono text-[#575B52] mt-1 sm:mt-0">
+          Architecture & Privacy
+        </span>
+      </div>
 
-        <div className="space-y-4">
-          {faqs.map((faq, index) => {
-            const isOpen = openIndex === index;
+      {/* Restrained Expandable Text (Not rounded cards!) */}
+      <div className="divide-y divide-[#D5D1C3] border-y border-[#D5D1C3]">
+        {faqs.map((faq, index) => {
+          const isOpen = openIndex === index;
 
-            return (
-              <div
-                key={index}
-                className="rounded-2xl bg-[#0f131a] border border-slate-800 transition-all overflow-hidden"
+          return (
+            <div key={index} className="py-4">
+              <button
+                onClick={() => setOpenIndex(isOpen ? null : index)}
+                className="w-full text-left flex items-center justify-between gap-4 focus:outline-none group"
+                aria-expanded={isOpen}
               >
-                <button
-                  onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="w-full p-5 text-left flex items-center justify-between gap-4 focus:outline-none focus:ring-1 focus:ring-lime-400"
-                  aria-expanded={isOpen}
-                >
-                  <span className="text-base font-bold text-white pr-2">
-                    {faq.question}
-                  </span>
-                  <div
-                    className={`w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 flex-shrink-0 transition-transform duration-200 ${
-                      isOpen ? 'transform rotate-180 text-lime-400 border-lime-500/30' : ''
-                    }`}
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
-                </button>
+                <span className="font-bold text-sm text-[#20231F] group-hover:text-[#D65A31] transition-colors">
+                  {faq.question}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-[#7A7F73] transition-transform duration-150 flex-shrink-0 ${
+                    isOpen ? 'transform rotate-180 text-[#D65A31]' : ''
+                  }`}
+                />
+              </button>
 
-                {isOpen && (
-                  <div className="px-5 pb-5 pt-1 text-sm text-slate-400 leading-relaxed border-t border-slate-850 font-sans">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+              {isOpen && (
+                <div className="mt-2.5 text-xs text-[#575B52] leading-relaxed max-w-3xl font-sans">
+                  {faq.answer}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

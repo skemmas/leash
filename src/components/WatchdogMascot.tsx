@@ -2,197 +2,103 @@ import React from 'react';
 
 interface WatchdogMascotProps {
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'hero';
-  status?: 'guarding' | 'alert' | 'secure';
-  showCable?: boolean;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  variant?: 'emblem' | 'illustration';
 }
 
 export const WatchdogMascot: React.FC<WatchdogMascotProps> = ({
   className = '',
   size = 'md',
-  status = 'guarding',
-  showCable = true,
+  variant = 'emblem',
 }) => {
   const sizeMap = {
-    sm: 'w-16 h-16',
-    md: 'w-28 h-28',
-    lg: 'w-44 h-44',
-    hero: 'w-64 h-64 sm:w-80 sm:h-80',
+    xs: 'w-5 h-5',
+    sm: 'w-7 h-7',
+    md: 'w-10 h-10',
+    lg: 'w-24 h-24 sm:w-28 sm:h-28',
   };
 
-  return (
-    <div className={`relative inline-flex items-center justify-center ${sizeMap[size]} ${className}`}>
-      {/* Background Soft Glow */}
-      <div className="absolute inset-0 bg-lime-400/10 rounded-full blur-2xl pointer-events-none transform -translate-y-2 scale-90" />
-
+  if (variant === 'emblem') {
+    return (
       <svg
-        viewBox="0 0 240 240"
+        viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full drop-shadow-[0_12px_24px_rgba(0,0,0,0.6)] select-none"
-        aria-label="LEASH Robotic Watchdog Mascot"
+        className={`${sizeMap[size]} ${className} flex-shrink-0 select-none`}
+        aria-label="LEASH Watchdog Emblem"
       >
-        <defs>
-          <linearGradient id="bodyGrad" x1="40" y1="50" x2="200" y2="210" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#1e2430" />
-            <stop offset="0.5" stopColor="#141820" />
-            <stop offset="1" stopColor="#0c0e13" />
-          </linearGradient>
+        {/* Chassis frame */}
+        <rect x="2" y="2" width="28" height="28" rx="4" fill="#20231F" />
+        {/* Left ear */}
+        <path d="M7 6L11 12H7V6Z" fill="#697255" />
+        {/* Right ear */}
+        <path d="M25 6L21 12H25V6Z" fill="#697255" />
+        {/* Head plate */}
+        <polygon points="9,11 23,11 25,18 20,24 12,24 7,18" fill="#F3F1EA" />
+        {/* Optical Sensor Bar / Eye Visor */}
+        <rect x="11" y="14" width="10" height="3" rx="1" fill="#D65A31" />
+        {/* Muzzle vent */}
+        <rect x="13" y="19" width="6" height="2" rx="0.5" fill="#20231F" />
+        {/* Collar clip line */}
+        <line x1="12" y1="24" x2="20" y2="24" stroke="#D65A31" strokeWidth="1.5" />
+        {/* Cable tether point */}
+        <circle cx="16" cy="27" r="1.5" fill="#D65A31" />
+      </svg>
+    );
+  }
 
-          <linearGradient id="armorLight" x1="80" y1="40" x2="160" y2="180" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#2e3748" />
-            <stop offset="1" stopColor="#171c26" />
-          </linearGradient>
+  // Illustration variant used sparingly in narrative or hero
+  return (
+    <div className={`inline-flex items-center justify-center ${sizeMap[size]} ${className}`}>
+      <svg
+        viewBox="0 0 120 120"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full select-none"
+        aria-label="LEASH Watchdog Technical Illustration"
+      >
+        {/* Technical grid lines */}
+        <circle cx="60" cy="60" r="54" stroke="#D5D1C3" strokeWidth="1" strokeDasharray="3 3" />
+        <line x1="60" y1="6" x2="60" y2="114" stroke="#D5D1C3" strokeWidth="0.75" />
+        <line x1="6" y1="60" x2="114" y2="60" stroke="#D5D1C3" strokeWidth="0.75" />
 
-          <linearGradient id="limeGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop stopColor="#bef264" />
-            <stop offset="0.6" stopColor="#a3e635" />
-            <stop offset="1" stopColor="#65a30d" />
-          </linearGradient>
-
-          <linearGradient id="cableGrad" x1="160" y1="170" x2="230" y2="230" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#a3e635" />
-            <stop offset="0.4" stopColor="#4d7c0f" />
-            <stop offset="0.8" stopColor="#1e293b" />
-          </linearGradient>
-
-          <filter id="visorGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        {/* Cable Leash extending outward */}
-        {showCable && (
-          <g className="transition-all duration-300">
-            {/* Cable shadow */}
-            <path
-              d="M 148 168 C 175 190, 195 160, 220 185 C 235 200, 230 230, 238 238"
-              stroke="#000"
-              strokeWidth="7"
-              strokeLinecap="round"
-              fill="none"
-              opacity="0.4"
-            />
-            {/* Cable core */}
-            <path
-              d="M 148 168 C 175 190, 195 160, 220 185 C 235 200, 230 230, 238 238"
-              stroke="url(#cableGrad)"
-              strokeWidth="4.5"
-              strokeLinecap="round"
-              strokeDasharray="8 3"
-              fill="none"
-              className="animate-pulse"
-            />
-            {/* Leash connection clip */}
-            <rect x="142" y="160" width="12" height="12" rx="3" fill="#334155" stroke="#a3e635" strokeWidth="1.5" />
-            <circle cx="148" cy="166" r="2.5" fill="#a3e635" />
-          </g>
-        )}
-
-        {/* Ears */}
-        {/* Left Ear */}
+        {/* Cable leash tether loop */}
         <path
-          d="M 72 82 L 48 34 C 47 31, 51 28, 55 30 L 92 62 Z"
-          fill="url(#bodyGrad)"
-          stroke="#2d3748"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-        <path d="M 58 40 L 76 68 L 64 64 Z" fill="#a3e635" opacity="0.6" />
-
-        {/* Right Ear */}
-        <path
-          d="M 168 82 L 192 34 C 193 31, 189 28, 185 30 L 148 62 Z"
-          fill="url(#bodyGrad)"
-          stroke="#2d3748"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-        <path d="M 182 40 L 164 68 L 176 64 Z" fill="#a3e635" opacity="0.6" />
-
-        {/* Head Chassis */}
-        <path
-          d="M 76 75 L 164 75 L 180 132 L 152 170 L 88 170 L 60 132 Z"
-          fill="url(#bodyGrad)"
-          stroke="#334155"
+          d="M 60 88 C 75 98, 92 88, 102 100"
+          stroke="#D65A31"
           strokeWidth="2.5"
-          strokeLinejoin="round"
+          strokeLinecap="round"
+          fill="none"
         />
+        <circle cx="102" cy="100" r="3" fill="#D65A31" />
 
-        {/* Forehead Armor Plate */}
-        <path
-          d="M 88 78 L 152 78 L 160 102 L 80 102 Z"
-          fill="url(#armorLight)"
-          stroke="#2a3444"
+        {/* Main Body Chassis */}
+        <polygon
+          points="32,46 88,46 96,72 80,90 40,90 24,72"
+          fill="#20231F"
+          stroke="#20231F"
           strokeWidth="1.5"
         />
 
-        {/* Cyber Visor / Optical Eyes */}
-        <g filter="url(#visorGlow)">
-          {/* Main Visor Bar */}
-          <rect
-            x="76"
-            y="108"
-            width="88"
-            height="22"
-            rx="5"
-            fill="#090d14"
-            stroke="#a3e635"
-            strokeWidth="1.5"
-          />
-          {/* Left Eye Segment */}
-          <rect x="84" y="113" width="28" height="12" rx="3" fill="url(#limeGrad)" />
-          {/* Right Eye Segment */}
-          <rect x="128" y="113" width="28" height="12" rx="3" fill="url(#limeGrad)" />
-          {/* Center Sensor Dot */}
-          <circle cx="120" cy="119" r="2.5" fill="#bef264" />
-        </g>
+        {/* Angular Ears */}
+        <polygon points="32,46 22,22 42,40" fill="#697255" />
+        <polygon points="88,46 98,22 78,40" fill="#697255" />
 
-        {/* Snout / Muzzle */}
-        <path
-          d="M 96 138 L 144 138 L 138 165 L 102 165 Z"
-          fill="#111620"
-          stroke="#242c3b"
-          strokeWidth="2"
-        />
+        {/* Brow Plate */}
+        <polygon points="40,46 80,46 84,58 36,58" fill="#F3F1EA" />
 
-        {/* Mechanical Nose / Air Intake */}
-        <path
-          d="M 112 144 L 128 144 L 124 153 L 116 153 Z"
-          fill="#a3e635"
-          opacity="0.9"
-        />
+        {/* Primary Sensor Visor (Safety Orange) */}
+        <rect x="42" y="60" width="36" height="9" rx="2" fill="#D65A31" />
+        <circle cx="48" cy="64.5" r="2" fill="#FFFFFF" opacity="0.9" />
+        <circle cx="72" cy="64.5" r="2" fill="#FFFFFF" opacity="0.9" />
 
-        {/* Intake Vents */}
-        <line x1="106" y1="158" x2="134" y2="158" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
-        <line x1="110" y1="162" x2="130" y2="162" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
+        {/* Lower Jaw & Muzzle */}
+        <polygon points="48,74 72,74 68,84 52,84" fill="#697255" />
+        <rect x="54" y="78" width="12" height="2" rx="0.5" fill="#20231F" />
 
-        {/* High-Tech Collar with Safety LED */}
-        <rect
-          x="78"
-          y="170"
-          width="84"
-          height="14"
-          rx="4"
-          fill="#0c1017"
-          stroke="#a3e635"
-          strokeWidth="1.5"
-        />
-        {/* Collar Rivets */}
-        <circle cx="86" cy="177" r="2" fill="#64748b" />
-        <circle cx="102" cy="177" r="2" fill="#a3e635" />
-        <circle cx="120" cy="177" r="2.5" fill="#a3e635" className="animate-pulse" />
-        <circle cx="138" cy="177" r="2" fill="#a3e635" />
-        <circle cx="154" cy="177" r="2" fill="#64748b" />
-
-        {/* Status Indicator Tag */}
-        {status === 'guarding' && (
-          <g>
-            <circle cx="120" cy="200" r="4" fill="#a3e635" />
-            <circle cx="120" cy="200" r="8" stroke="#a3e635" strokeWidth="1" opacity="0.4" className="animate-ping" />
-          </g>
-        )}
+        {/* Mechanical Collar */}
+        <rect x="42" y="86" width="36" height="5" rx="1.5" fill="#D65A31" />
+        <circle cx="60" cy="88.5" r="2" fill="#FFFFFF" />
       </svg>
     </div>
   );

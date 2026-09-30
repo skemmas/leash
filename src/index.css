@@ -2,59 +2,63 @@
 
 @layer base {
   :root {
-    --bg-dark: #090b0e;
-    --card-dark: #11141a;
-    --card-border: #1e2430;
-    --accent-lime: #a3e635;
-    --accent-lime-dim: rgba(163, 230, 53, 0.12);
+    --bg-base: #F3F1EA;
+    --text-primary: #20231F;
+    --text-muted: #575B52;
+    --text-subtle: #7A7F73;
+    --accent-olive: #697255;
+    --accent-orange: #D65A31;
+    --border-neutral: #D5D1C3;
+    --surface-card: #FFFFFF;
+    --surface-alt: #EBE8DE;
   }
 
   body {
-    background-color: #080a0e;
-    color: #e5e7eb;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #F3F1EA;
+    color: #20231F;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.01em;
     overflow-x: hidden;
-    selection-background-color: #a3e635;
-    selection-color: #000;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: -0.025em;
+    font-feature-settings: "ss01" on, "cv05" on;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    letter-spacing: -0.02em;
   }
 }
 
-/* Custom scrollbar */
+/* Custom restrained scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #090b0e;
+  background: #F3F1EA;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f2532;
-  border-radius: 4px;
+  background: #C8C3B4;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2a3344;
+  background: #ABA595;
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.05);
-  }
+/* Restrained transitions */
+* {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.animate-pulse-glow {
-  animation: pulseGlow 6s ease-in-out infinite;
-}
-
-@keyframes leashWave {
-  0%, 100% {
-    d: path("M 10 10 Q 50 40 90 20 T 170 30");
-  }
-  50% {
-    d: path("M 10 10 Q 50 -10 90 30 T 170 10");
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

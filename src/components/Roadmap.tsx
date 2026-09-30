@@ -1,131 +1,114 @@
 import React from 'react';
-import { CheckCircle2, Clock, Sparkles } from 'lucide-react';
 
 export const Roadmap: React.FC = () => {
-  const roadmapItems = [
+  const milestones = [
     {
-      phase: 'Phase 1',
-      title: 'Core Protocol & Local Tools',
+      phase: '01',
+      title: 'Local Boundary Synthesis & Instruction Validator',
+      date: 'Q3 2026',
       status: 'working_now',
       statusLabel: 'Working Now',
-      items: [
-        'Interactive 8-permission agent boundary builder',
-        'Export formats: Human Markdown, Plain Text, and Documented JSON',
-        'Deterministic 5-rule client-side instruction validator',
-        'Local draft auto-persistence with reset controls',
-        'Preconfigured presets for Research, Coding, and Content agents',
+      deliverables: [
+        'Interactive 8-permission agent control matrix with Allowed / Ask First / Blocked states',
+        'Multi-format exports: Standardized Markdown, plain-language text, and documented JSON spec',
+        'Client-side deterministic instruction auditor detecting 5 missing guardrails',
+        'Local draft persistence in browser memory (localStorage) with factory reset',
+        'Baseline presets for Research, Coding, Content, and Cautious modes',
       ],
     },
     {
-      phase: 'Phase 2',
-      title: 'Ecosystem & Community Sync',
+      phase: '02',
+      title: 'Solana Verification & Holder Workspaces',
+      date: 'Planned',
       status: 'planned',
       statusLabel: 'Planned',
-      items: [
-        'Solana holder signature verification for accountless access',
-        'Encrypted remote workspace sync for multi-device setups',
-        'Community template publishing with upvotes and star ratings',
-        'CLI helper package (`npx leash-policy init`) for local git repos',
+      deliverables: [
+        'Solana signature verification for accountless operator access',
+        'End-to-end encrypted remote workspace sync across development machines',
+        'Policy revision history logs with visual diff tracking',
+        'Community template registry for sharing and voting on specialized agent policies',
       ],
     },
     {
-      phase: 'Phase 3',
-      title: 'Runtime Enforcers & Extensions',
+      phase: '03',
+      title: 'Execution Interceptors & Enforcement Bridges',
+      date: 'Planned',
       status: 'planned',
       statusLabel: 'Planned',
-      items: [
-        'Pre-execution bash hook to physically intercept flagged commands',
-        'API proxy middleware for hard spending limit enforcement',
-        'Browser extension to monitor web agent tool calls in real time',
-        'GitHub Actions policy compliance linter for agent PRs',
+      deliverables: [
+        'Local CLI hook (`npx leash-guard`) to physically halt unapproved terminal commands',
+        'HTTP proxy middleware for hard spending limit enforcement on paid APIs',
+        'GitHub Actions compliance checker for agent code commits and pull requests',
       ],
     },
   ];
 
   return (
-    <section id="roadmap" className="py-20 border-t border-slate-900 bg-[#07090d] relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-lime-400/10 text-lime-400 border border-lime-400/20 mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>TRANSPARENT ROADMAP</span>
+    <section id="roadmap" className="border-b border-[#D5D1C3] py-10 scroll-mt-6">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-6 pb-3 border-b border-[#D5D1C3]">
+        <div>
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[#7A7F73] font-semibold">
+            Engineering Milestones
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            Development Milestones
+          <h2 className="text-2xl font-bold text-[#20231F] mt-1">
+            Status & Development Schedule
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
-            No ambiguous promises. We clearly demarcate what is active in your hands today and what is on our engineering roadmap.
-          </p>
         </div>
+        <span className="text-xs font-mono text-[#575B52] mt-1 sm:mt-0">
+          Transparent delivery log
+        </span>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {roadmapItems.map(item => {
-            const isWorking = item.status === 'working_now';
+      {/* Simple Dated / Status List (No grid of rounded cards!) */}
+      <div className="divide-y divide-[#D5D1C3] border-y border-[#D5D1C3]">
+        {milestones.map(m => {
+          const isWorking = m.status === 'working_now';
 
-            return (
-              <div
-                key={item.phase}
-                className={`p-7 rounded-3xl border flex flex-col justify-between transition-all ${
-                  isWorking
-                    ? 'bg-[#0f141d] border-lime-500/40 shadow-xl shadow-lime-950/20 ring-1 ring-lime-400/20'
-                    : 'bg-[#0e1117] border-slate-800'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-mono font-bold text-slate-400">
-                      {item.phase}
-                    </span>
-                    <span
-                      className={`text-[11px] font-mono px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 ${
-                        isWorking
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-slate-800 text-slate-400 border border-slate-700'
-                      }`}
-                    >
-                      {isWorking ? (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>WORKING NOW</span>
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>PLANNED</span>
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white mb-4">{item.title}</h3>
-
-                  <ul className="space-y-3 font-mono text-xs text-slate-300">
-                    {item.items.map((sub, i) => (
-                      <li key={i} className="flex items-start gap-2.5 leading-snug">
-                        {isWorking ? (
-                          <span className="text-emerald-400 font-bold mt-0.5">✔</span>
-                        ) : (
-                          <span className="text-slate-600 font-bold mt-0.5">○</span>
-                        )}
-                        <span className={isWorking ? 'text-slate-200' : 'text-slate-400'}>
-                          {sub}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+          return (
+            <div
+              key={m.phase}
+              className="py-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-start"
+            >
+              {/* Col 1: Phase & Date */}
+              <div className="md:col-span-3 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-[#20231F]">
+                    PHASE {m.phase}
+                  </span>
+                  <span
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                      isWorking
+                        ? 'bg-[#2E5A36] text-[#FFFFFF]'
+                        : 'bg-[#D5D1C3] text-[#575B52]'
+                    }`}
+                  >
+                    {m.statusLabel}
+                  </span>
                 </div>
-
-                <div className="mt-8 pt-4 border-t border-slate-800/80 text-[11px] font-mono text-slate-400">
-                  {isWorking ? (
-                    <span className="text-emerald-400 font-semibold">Ready to test above</span>
-                  ) : (
-                    <span>Subject to technical specification</span>
-                  )}
+                <div className="text-xs font-mono text-[#7A7F73]">
+                  {m.date}
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              {/* Col 2: Milestone Title & Items */}
+              <div className="md:col-span-9 space-y-2">
+                <h3 className="font-bold text-sm text-[#20231F]">
+                  {m.title}
+                </h3>
+                <ul className="space-y-1 text-xs text-[#575B52] font-mono">
+                  {m.deliverables.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className={isWorking ? 'text-[#2E5A36]' : 'text-[#7A7F73]'}>
+                        {isWorking ? '✔' : '—'}
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

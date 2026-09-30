@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import type { AgentPolicy } from './types/policy';
+import { DEFAULT_POLICY } from './types/policy';
+import { SidebarRail } from './components/SidebarRail';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { HowItWorks } from './components/HowItWorks';
@@ -14,7 +17,16 @@ import { tokenConfig } from './config/tokenConfig';
 
 export const App: React.FC = () => {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const keyBuffer = React.useRef<string>('');
+  const keyBuffer = useRef<string>('');
+
+  // Track live policy metrics for the sidebar widget
+  const [policySummary, setPolicySummary] = useState({
+    allowed: Object.values(DEFAULT_POLICY.permissions).filter(v => v === 'allowed').length,
+    askFirst: Object.values(DEFAULT_POLICY.permissions).filter(v => v === 'ask_first').length,
+    blocked: Object.values(DEFAULT_POLICY.permissions).filter(v => v === 'blocked').length,
+  });
+  const [activeAgentName, setActiveAgentName] = useState(DEFAULT_POLICY.name);
+  const [lastSavedTime, setLastSavedTime] = useState('Draft active');
 
   // Super invisible secret keystroke listener strictly complying with PumpSites Rule #6
   useEffect(() => {
@@ -41,6 +53,18 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const handlePolicyChange = (updated: AgentPolicy) => {
+    setActiveAgentName(updated.name);
+    setPolicySummary({
+      allowed: Object.values(updated.permissions).filter(v => v === 'allowed').length,
+      askFirst: Object.values(updated.permissions).filter(v => v === 'ask_first').length,
+      blocked: Object.values(updated.permissions).filter(v => v === 'blocked').length,
+    });
+    setLastSavedTime(
+      `Saved ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    );
+  };
+
   const handleUpdateMint = (newMint: string, newPumpUrl?: string) => {
     tokenConfig.mintAddress = newMint;
     if (newPumpUrl) {
@@ -52,24 +76,34 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080a0e] text-[#f5f5f7] flex flex-col selection:bg-lime-400 selection:text-black">
-      {/* Top Navigation */}
-      <Navbar />
+    <div className="min-h-screen bg-[#F3F1EA] text-[#20231F] flex flex-col md:flex-row selection:bg-[#D65A31] selection:text-white">
+      {/* Asymmetric Desktop Left Rail */}
+      <div className="hidden md:block">
+        <SidebarRail
+          policySummary={policySummary}
+          agentName={activeAgentName}
+          lastSaved={lastSavedTime}
+        />
+      </div>
 
-      {/* Main Content Sections */}
-      <main className="flex-grow">
-        <Hero />
-        <HowItWorks />
-        <PermissionBuilder />
-        <PolicyCheck />
-        <Narrative />
-        <TokenRole />
-        <Roadmap />
-        <Faq />
-      </main>
+      {/* Main Workspace Area */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Mobile Navigation Header */}
+        <Navbar />
 
-      {/* Footer */}
-      <Footer />
+        {/* Content Canvas */}
+        <main className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 space-y-12 flex-1">
+          <Hero />
+          <HowItWorks />
+          <PermissionBuilder onPolicyChange={handlePolicyChange} />
+          <PolicyCheck />
+          <Narrative />
+          <TokenRole />
+          <Roadmap />
+          <Faq />
+          <Footer />
+        </main>
+      </div>
 
       {/* Invisible Secret Admin Modal */}
       <AdminModal

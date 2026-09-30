@@ -19,22 +19,26 @@ import {
   Check,
   Download,
   RotateCcw,
-  Sparkles,
-  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Ban,
   AlertTriangle,
-  FileCode,
-  FileText,
-  Sliders,
-  Info,
-  DollarSign,
-  FolderLock,
   Globe,
-  OctagonAlert,
+  Folder,
+  DollarSign,
+  ShieldAlert,
+  Octagon,
+  Eye,
+  Sliders,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'leash_agent_policy_draft_v1';
 
-export const PermissionBuilder: React.FC = () => {
+interface PermissionBuilderProps {
+  onPolicyChange?: (policy: AgentPolicy) => void;
+}
+
+export const PermissionBuilder: React.FC<PermissionBuilderProps> = ({ onPolicyChange }) => {
   // Load draft from localStorage or fallback to default
   const [policy, setPolicy] = useState<AgentPolicy>(() => {
     try {
@@ -63,9 +67,16 @@ export const PermissionBuilder: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'preview' | 'json' | 'plain'>('preview');
   const [copiedType, setCopiedType] = useState<string | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [lastSaved, setLastSaved] = useState<string>('Loaded');
+  const [lastSaved, setLastSaved] = useState<string>('Ready');
+  // Mobile tab switch between 'edit' and 'preview'
+  const [mobileView, setMobileView] = useState<'edit' | 'preview'>('edit');
 
-  // Auto-save draft on changes
+  // Compute live permission metrics
+  const allowedCount = Object.values(policy.permissions).filter(v => v === 'allowed').length;
+  const askFirstCount = Object.values(policy.permissions).filter(v => v === 'ask_first').length;
+  const blockedCount = Object.values(policy.permissions).filter(v => v === 'blocked').length;
+
+  // Auto-save draft on changes and notify parent
   useEffect(() => {
     try {
       const updated = {
@@ -73,11 +84,15 @@ export const PermissionBuilder: React.FC = () => {
         updatedAt: new Date().toISOString(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      setLastSaved(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setLastSaved(`Saved ${now}`);
+      if (onPolicyChange) {
+        onPolicyChange(updated);
+      }
     } catch {
-      // Ignore storage errors in restricted iframes
+      // Storage safety
     }
-  }, [policy]);
+  }, [policy, onPolicyChange]);
 
   const updatePermission = (key: PermissionKey, level: PermissionLevel) => {
     setPolicy(prev => ({
@@ -129,7 +144,7 @@ export const PermissionBuilder: React.FC = () => {
   const handleCopy = (text: string, type: string) => {
     navigator.clipboard.writeText(text);
     setCopiedType(type);
-    setTimeout(() => setCopiedType(null), 2500);
+    setTimeout(() => setCopiedType(null), 1800);
   };
 
   const downloadFile = (filename: string, content: string, mimeType: string) => {
@@ -146,454 +161,479 @@ export const PermissionBuilder: React.FC = () => {
   };
 
   return (
-    <section id="builder" className="py-20 border-t border-slate-900 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-lime-400/10 text-lime-400 border border-lime-400/20 mb-4">
-            <Sliders className="w-3.5 h-3.5" />
-            <span>INTERACTIVE BUILDER</span>
-          </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            Agent Permission Builder
-          </h2>
-          <p className="text-base sm:text-lg text-slate-400">
-            Define clear operational boundaries for your AI assistant. Toggle access levels, specify spending and filesystem constraints, and export ready-to-use policies.
-          </p>
-
-          {/* Mandatory Clear Note */}
-          <div className="mt-6 p-3.5 rounded-xl bg-slate-900/90 border border-amber-500/30 text-amber-200 text-xs sm:text-sm flex items-start sm:items-center justify-center gap-2.5 max-w-2xl mx-auto shadow-inner text-left sm:text-center">
-            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5 sm:mt-0" />
-            <span>
-              <strong>Note:</strong> LEASH helps write instructions. Enforcement depends on your agent platform.
+    <section id="builder" className="border-b border-[#D5D1C3] py-10 scroll-mt-6">
+      {/* Visual Center Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 mb-6 border-b border-[#D5D1C3]">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 bg-[#D65A31] rounded-full" />
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#7A7F73] font-semibold">
+              Visual Center / Primary Tool
             </span>
           </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#20231F] tracking-tight">
+            Agent Permission Builder
+          </h2>
         </div>
 
-        {/* Presets Bar */}
-        <div className="mb-10 p-5 rounded-2xl bg-[#0f131a] border border-slate-800">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 uppercase tracking-wider">
-              <Sparkles className="w-4 h-4 text-lime-400" />
-              <span>Quick Role Presets</span>
-            </div>
-            <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>Local draft auto-saved ({lastSaved})</span>
-            </div>
+        {/* Live Permission Summary Badge */}
+        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+          <div className="px-3 py-1 rounded border border-[#D5D1C3] bg-[#FFFFFF] flex items-center gap-2">
+            <span className="text-[#20231F] font-semibold">Summary:</span>
+            <span className="text-[#2E5A36] font-bold">{allowedCount} allowed</span>
+            <span className="text-[#7A7F73]">/</span>
+            <span className="text-[#8A5812] font-bold">{askFirstCount} need approval</span>
+            <span className="text-[#7A7F73]">/</span>
+            <span className="text-[#9A3215] font-bold">{blockedCount} blocked</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {POLICY_PRESETS.map(preset => (
-              <button
-                key={preset.id}
-                onClick={() => applyPreset(preset.id)}
-                className="text-left p-3.5 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-lime-500/50 transition-all group focus:outline-none focus:ring-1 focus:ring-lime-400"
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-bold text-white group-hover:text-lime-300 transition-colors">
-                    {preset.name}
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                    {preset.badge}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                  {preset.description}
-                </p>
-              </button>
-            ))}
-          </div>
+          <span className="text-[11px] text-[#7A7F73]">
+            {lastSaved}
+          </span>
         </div>
+      </div>
 
-        {/* Main Builder Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Form Controls (7 cols) */}
-          <div className="lg:col-span-7 space-y-8">
-            {/* 1. Agent Identification */}
-            <div className="p-6 rounded-2xl bg-[#0f131a] border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-lime-400/10 text-lime-400 flex items-center justify-center text-xs font-mono font-bold">
-                    1
-                  </span>
-                  <span>Agent Identity & Purpose</span>
+      {/* Enforcement Limitation Warning Line */}
+      <div className="p-3 mb-6 rounded border border-[#D5D1C3] bg-[#EBE8DE] text-xs text-[#575B52] flex items-start gap-2.5">
+        <AlertTriangle className="w-4 h-4 text-[#D65A31] flex-shrink-0 mt-0.5" />
+        <div className="leading-snug">
+          <strong className="text-[#20231F]">Enforcement Note:</strong> LEASH standardizes instruction-level operational boundaries. Physical runtime enforcement depends on your agent execution harness, container sandboxes, and host environment.
+        </div>
+      </div>
+
+      {/* Presets Bar */}
+      <div className="mb-8 p-3.5 rounded border border-[#D5D1C3] bg-[#FFFFFF] space-y-2">
+        <div className="flex items-center justify-between text-[11px] font-mono text-[#7A7F73]">
+          <span className="uppercase tracking-wider font-semibold">Baseline Presets</span>
+          <span>Click to populate controls</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {POLICY_PRESETS.map(preset => (
+            <button
+              key={preset.id}
+              onClick={() => applyPreset(preset.id)}
+              className="text-left px-3 py-2 rounded border border-[#D5D1C3] bg-[#F3F1EA] hover:bg-[#EBE8DE] hover:border-[#20231F]/40 transition-colors text-xs space-y-0.5"
+            >
+              <div className="font-semibold text-[#20231F] flex items-center justify-between">
+                <span>{preset.name}</span>
+                <span className="text-[10px] font-mono text-[#697255]">{preset.badge}</span>
+              </div>
+              <div className="text-[11px] text-[#575B52] line-clamp-1">
+                {preset.description}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Mobile Switch between Edit and Preview */}
+      <div className="flex sm:hidden mb-6 p-1 rounded border border-[#D5D1C3] bg-[#EBE8DE]">
+        <button
+          onClick={() => setMobileView('edit')}
+          className={`flex-1 py-1.5 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors ${
+            mobileView === 'edit'
+              ? 'bg-[#20231F] text-[#F3F1EA]'
+              : 'text-[#575B52]'
+          }`}
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          <span>Edit Controls</span>
+        </button>
+        <button
+          onClick={() => setMobileView('preview')}
+          className={`flex-1 py-1.5 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors ${
+            mobileView === 'preview'
+              ? 'bg-[#20231F] text-[#F3F1EA]'
+              : 'text-[#575B52]'
+          }`}
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>Document Preview ({activeTab})</span>
+        </button>
+      </div>
+
+      {/* Main Asymmetric Grid: Settings on Left, Generated Policy on Right */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Settings & Controls (7 cols) */}
+        <div
+          className={`lg:col-span-7 space-y-6 ${
+            mobileView === 'preview' ? 'hidden sm:block' : 'block'
+          }`}
+        >
+          {/* Section 1: Agent Identification */}
+          <div className="bg-[#FFFFFF] border border-[#D5D1C3] rounded p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D5D1C3]">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold text-[#D65A31]">§ 1.0</span>
+                <h3 className="font-bold text-sm text-[#20231F] uppercase tracking-wider">
+                  Agent Identification
                 </h3>
               </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="agent-name" className="block text-xs font-mono text-slate-400 mb-1.5 uppercase">
-                    Agent Name / Identifier
-                  </label>
-                  <input
-                    id="agent-name"
-                    type="text"
-                    value={policy.name}
-                    onChange={e => setPolicy(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g. Watchdog-Alpha, DocReader-01"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-lime-400 focus:ring-1 focus:ring-lime-400 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="agent-purpose" className="block text-xs font-mono text-slate-400 mb-1.5 uppercase">
-                    Core Purpose & Scope
-                  </label>
-                  <textarea
-                    id="agent-purpose"
-                    rows={2}
-                    value={policy.purpose}
-                    onChange={e => setPolicy(prev => ({ ...prev, purpose: e.target.value }))}
-                    placeholder="Describe what this agent is allowed to do and what tasks it specializes in..."
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-lime-400 focus:ring-1 focus:ring-lime-400 transition-colors"
-                  />
-                </div>
-              </div>
+              <span className="text-[10px] font-mono text-[#7A7F73]">Required</span>
             </div>
 
-            {/* 2. Core Permissions (8 Items) */}
-            <div className="p-6 rounded-2xl bg-[#0f131a] border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                <div>
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-lime-400/10 text-lime-400 flex items-center justify-center text-xs font-mono font-bold">
-                      2
-                    </span>
-                    <span>Operational Permissions</span>
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Choose: Allowed, Ask first, or Blocked. Credentials and spending default to Blocked.
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {PERMISSION_DEFINITIONS.map(def => {
-                  const currentLevel = policy.permissions[def.key] || 'ask_first';
-
-                  return (
-                    <div
-                      key={def.key}
-                      className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-850 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors hover:border-slate-800"
-                    >
-                      <div className="space-y-0.5 max-w-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-slate-200">{def.label}</span>
-                          {def.category === 'sensitive' && (
-                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                              High Risk
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-400 leading-snug">{def.description}</p>
-                      </div>
-
-                      {/* 3-State Radio Segmented Toggle */}
-                      <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 flex-shrink-0 self-start sm:self-center">
-                        <button
-                          type="button"
-                          onClick={() => updatePermission(def.key, 'allowed')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            currentLevel === 'allowed'
-                              ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                              : 'text-slate-400 hover:text-slate-200'
-                          }`}
-                        >
-                          Allowed
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updatePermission(def.key, 'ask_first')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            currentLevel === 'ask_first'
-                              ? 'bg-amber-400 text-slate-950 shadow-sm'
-                              : 'text-slate-400 hover:text-slate-200'
-                          }`}
-                        >
-                          Ask first
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updatePermission(def.key, 'blocked')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            currentLevel === 'blocked'
-                              ? 'bg-rose-500 text-white shadow-sm'
-                              : 'text-slate-400 hover:text-slate-200'
-                          }`}
-                        >
-                          Blocked
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 3. Optional Boundaries */}
-            <div className="p-6 rounded-2xl bg-[#0f131a] border border-slate-800 space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-lime-400/10 text-lime-400 flex items-center justify-center text-xs font-mono font-bold">
-                    3
-                  </span>
-                  <span>Guardrail Boundaries</span>
-                </h3>
-                <span className="text-xs font-mono text-slate-400">Strict Constraints</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Allowed Domains */}
-                <div>
-                  <label className="block text-xs font-mono text-slate-400 mb-1.5 flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-lime-400" />
-                    <span>ALLOWED DOMAINS</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={policy.boundaries.allowedDomains}
-                    onChange={e => updateBoundary('allowedDomains', e.target.value)}
-                    placeholder="github.com, docs.rs, npmjs.com"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-lime-400"
-                  />
-                  <span className="text-[10px] text-slate-400 mt-1 block">Comma-separated domain list</span>
-                </div>
-
-                {/* Permitted Folders */}
-                <div>
-                  <label className="block text-xs font-mono text-slate-400 mb-1.5 flex items-center gap-1.5">
-                    <FolderLock className="w-3.5 h-3.5 text-lime-400" />
-                    <span>PERMITTED FOLDERS</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={policy.boundaries.permittedFolders}
-                    onChange={e => updateBoundary('permittedFolders', e.target.value)}
-                    placeholder="./src, ./tests, ./docs"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-lime-400"
-                  />
-                  <span className="text-[10px] text-slate-400 mt-1 block">Limit filesystem writes to these roots</span>
-                </div>
-
-                {/* Spending Limit & Currency */}
-                <div>
-                  <label className="block text-xs font-mono text-slate-400 mb-1.5 flex items-center gap-1.5">
-                    <DollarSign className="w-3.5 h-3.5 text-lime-400" />
-                    <span>SPENDING LIMIT & CURRENCY</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={policy.boundaries.spendingLimit}
-                      onChange={e => updateBoundary('spendingLimit', e.target.value)}
-                      placeholder="0.00"
-                      className="w-2/3 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-lime-400"
-                    />
-                    <select
-                      value={policy.boundaries.spendingCurrency}
-                      onChange={e => updateBoundary('spendingCurrency', e.target.value as any)}
-                      aria-label="Spending Currency"
-                      className="w-1/3 px-2 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-lime-400"
-                    >
-                      <option value="USDC">USDC</option>
-                      <option value="SOL">SOL</option>
-                      <option value="USD">USD</option>
-                    </select>
-                  </div>
-                  <span className="text-[10px] text-slate-400 mt-1 block">Maximum expenditure cap per run</span>
-                </div>
-
-                {/* Always Require Approval Actions */}
-                <div>
-                  <label className="block text-xs font-mono text-slate-400 mb-1.5 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-lime-400" />
-                    <span>ALWAYS REQUIRE APPROVAL FOR</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={policy.boundaries.approvalRequiredActions}
-                    onChange={e => updateBoundary('approvalRequiredActions', e.target.value)}
-                    placeholder="git push, rm -rf, sending emails"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-lime-400"
-                  />
-                  <span className="text-[10px] text-slate-400 mt-1 block">High-consequence commands</span>
-                </div>
-              </div>
-
-              {/* Stop Conditions */}
+            <div className="grid grid-cols-1 gap-4 text-xs">
               <div>
-                <label className="block text-xs font-mono text-slate-400 mb-1.5 flex items-center gap-1.5">
-                  <OctagonAlert className="w-3.5 h-3.5 text-rose-400" />
-                  <span>AUTOMATED STOP CONDITIONS</span>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#575B52] mb-1">
+                  Identifier Name
                 </label>
                 <input
                   type="text"
-                  value={policy.boundaries.stopConditions}
-                  onChange={e => updateBoundary('stopConditions', e.target.value)}
-                  placeholder="Encountering API keys, 3 consecutive errors, or user saying STOP"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-rose-400"
+                  value={policy.name}
+                  onChange={e => setPolicy(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g. CodeCompanion-01, Scout-Agent"
+                  className="w-full px-3 py-2 rounded border border-[#D5D1C3] bg-[#F3F1EA] text-[#20231F] font-mono text-xs focus:outline-none focus:border-[#D65A31] focus:ring-1 focus:ring-[#D65A31]"
                 />
-                <span className="text-[10px] text-slate-400 mt-1 block">Emergency trigger to immediately cease agent execution</span>
               </div>
 
-              {/* Reset Action */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-xs text-slate-400">Want to start over?</span>
-                {showResetConfirm ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-rose-400">Reset all fields?</span>
-                    <button
-                      onClick={resetToDefaults}
-                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500 text-white hover:bg-rose-600"
-                    >
-                      Yes, Reset
-                    </button>
-                    <button
-                      onClick={() => setShowResetConfirm(false)}
-                      className="px-2.5 py-1 rounded-lg text-xs text-slate-400 hover:text-white"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowResetConfirm(true)}
-                    className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-rose-400 transition-colors"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Reset to Defaults</span>
-                  </button>
-                )}
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#575B52] mb-1">
+                  Operational Purpose & Scope
+                </label>
+                <textarea
+                  rows={2}
+                  value={policy.purpose}
+                  onChange={e => setPolicy(prev => ({ ...prev, purpose: e.target.value }))}
+                  placeholder="Describe the agent's core role and boundaries of responsibility..."
+                  className="w-full px-3 py-2 rounded border border-[#D5D1C3] bg-[#F3F1EA] text-[#20231F] text-xs focus:outline-none focus:border-[#D65A31] focus:ring-1 focus:ring-[#D65A31] resize-y"
+                />
               </div>
             </div>
           </div>
 
-          {/* Right Column: Live Policy Preview & Export Controls (5 cols) */}
-          <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4">
-            <div className="bg-[#0f131a] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-              {/* Tab Header */}
-              <div className="bg-slate-900/90 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setActiveTab('preview')}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                      activeTab === 'preview'
-                        ? 'bg-slate-800 text-lime-400 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Markdown</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('json')}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                      activeTab === 'json'
-                        ? 'bg-slate-800 text-lime-400 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <FileCode className="w-3.5 h-3.5" />
-                    <span>JSON Spec</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('plain')}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                      activeTab === 'plain'
-                        ? 'bg-slate-800 text-lime-400 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <span>Plain Text</span>
-                  </button>
-                </div>
+          {/* Section 2: Operational Permissions (Structured Rows) */}
+          <div className="bg-[#FFFFFF] border border-[#D5D1C3] rounded p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D5D1C3]">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold text-[#D65A31]">§ 2.0</span>
+                <h3 className="font-bold text-sm text-[#20231F] uppercase tracking-wider">
+                  Operational Permissions (8 Controls)
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-[#7A7F73]">Tri-State</span>
+            </div>
 
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => {
-                      const text =
-                        activeTab === 'json'
-                          ? jsonContent
-                          : activeTab === 'plain'
-                          ? plainTextContent
-                          : markdownContent;
-                      handleCopy(text, activeTab);
-                    }}
-                    className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-xs inline-flex items-center gap-1 border border-slate-700/60"
-                    title="Copy active tab"
+            <div className="divide-y divide-[#EBE8DE]">
+              {PERMISSION_DEFINITIONS.map(def => {
+                const currentLevel = policy.permissions[def.key] || 'ask_first';
+
+                return (
+                  <div
+                    key={def.key}
+                    className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                   >
-                    {copiedType === activeTab ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-[11px] text-emerald-400 font-semibold">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span className="text-[11px] hidden sm:inline">Copy</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                    <div className="space-y-0.5 max-w-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-[#20231F]">{def.label}</span>
+                        {def.category === 'sensitive' && (
+                          <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-[#9A3215]/10 text-[#9A3215] font-semibold">
+                            Sensitive
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-[#575B52] leading-tight">
+                        {def.description}
+                      </p>
+                    </div>
+
+                    {/* Industrial 3-State Controls (Not relying on color alone) */}
+                    <div className="inline-flex rounded border border-[#D5D1C3] bg-[#F3F1EA] p-0.5 shrink-0 self-start sm:self-center">
+                      {/* Allowed */}
+                      <button
+                        type="button"
+                        onClick={() => updatePermission(def.key, 'allowed')}
+                        className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                          currentLevel === 'allowed'
+                            ? 'bg-[#2E5A36] text-[#FFFFFF] shadow-xs'
+                            : 'text-[#575B52] hover:text-[#20231F]'
+                        }`}
+                      >
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>Allowed</span>
+                      </button>
+
+                      {/* Ask First */}
+                      <button
+                        type="button"
+                        onClick={() => updatePermission(def.key, 'ask_first')}
+                        className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                          currentLevel === 'ask_first'
+                            ? 'bg-[#8A5812] text-[#FFFFFF] shadow-xs'
+                            : 'text-[#575B52] hover:text-[#20231F]'
+                        }`}
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        <span>Ask first</span>
+                      </button>
+
+                      {/* Blocked */}
+                      <button
+                        type="button"
+                        onClick={() => updatePermission(def.key, 'blocked')}
+                        className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                          currentLevel === 'blocked'
+                            ? 'bg-[#9A3215] text-[#FFFFFF] shadow-xs'
+                            : 'text-[#575B52] hover:text-[#20231F]'
+                        }`}
+                      >
+                        <Ban className="w-3 h-3" />
+                        <span>Blocked</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section 3: Guardrail Boundaries */}
+          <div className="bg-[#FFFFFF] border border-[#D5D1C3] rounded p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D5D1C3]">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold text-[#D65A31]">§ 3.0</span>
+                <h3 className="font-bold text-sm text-[#20231F] uppercase tracking-wider">
+                  Guardrail Boundaries
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-[#7A7F73]">Optional Constraints</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#575B52] mb-1 flex items-center gap-1">
+                  <Globe className="w-3 h-3 text-[#697255]" />
+                  <span>Allowed Domains</span>
+                </label>
+                <input
+                  type="text"
+                  value={policy.boundaries.allowedDomains}
+                  onChange={e => updateBoundary('allowedDomains', e.target.value)}
+                  placeholder="github.com, npmjs.com"
+                  className="w-full px-3 py-1.5 rounded border border-[#D5D1C3] bg-[#F3F1EA] font-mono text-xs text-[#20231F] focus:outline-none focus:border-[#D65A31]"
+                />
+                <span className="text-[10px] text-[#7A7F73] mt-0.5 block">Comma-separated hostnames</span>
               </div>
 
-              {/* Code / Content Viewer */}
-              <div className="p-4 bg-slate-950/80 font-mono text-xs overflow-x-auto max-h-[460px] select-text">
-                {activeTab === 'preview' && (
-                  <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed font-mono">
-                    {markdownContent}
-                  </pre>
-                )}
-
-                {activeTab === 'json' && (
-                  <pre className="text-emerald-400/90 whitespace-pre-wrap leading-relaxed font-mono">
-                    {jsonContent}
-                  </pre>
-                )}
-
-                {activeTab === 'plain' && (
-                  <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed font-mono">
-                    {plainTextContent}
-                  </pre>
-                )}
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#575B52] mb-1 flex items-center gap-1">
+                  <Folder className="w-3 h-3 text-[#697255]" />
+                  <span>Permitted Folders</span>
+                </label>
+                <input
+                  type="text"
+                  value={policy.boundaries.permittedFolders}
+                  onChange={e => updateBoundary('permittedFolders', e.target.value)}
+                  placeholder="./src, ./tests, ./docs"
+                  className="w-full px-3 py-1.5 rounded border border-[#D5D1C3] bg-[#F3F1EA] font-mono text-xs text-[#20231F] focus:outline-none focus:border-[#D65A31]"
+                />
+                <span className="text-[10px] text-[#7A7F73] mt-0.5 block">Filesystem write roots</span>
               </div>
 
-              {/* Export Action Buttons */}
-              <div className="p-4 bg-slate-900/60 border-t border-slate-800 space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => downloadFile('policy.md', markdownContent, 'text/markdown')}
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700 hover:border-slate-600 transition-all"
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#575B52] mb-1 flex items-center gap-1">
+                  <DollarSign className="w-3 h-3 text-[#697255]" />
+                  <span>Spending Limit & Currency</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={policy.boundaries.spendingLimit}
+                    onChange={e => updateBoundary('spendingLimit', e.target.value)}
+                    placeholder="0.00"
+                    className="w-2/3 px-3 py-1.5 rounded border border-[#D5D1C3] bg-[#F3F1EA] font-mono text-xs text-[#20231F] focus:outline-none focus:border-[#D65A31]"
+                  />
+                  <select
+                    value={policy.boundaries.spendingCurrency}
+                    onChange={e => updateBoundary('spendingCurrency', e.target.value as any)}
+                    className="w-1/3 px-2 py-1.5 rounded border border-[#D5D1C3] bg-[#F3F1EA] text-xs font-mono text-[#20231F] focus:outline-none focus:border-[#D65A31]"
                   >
-                    <Download className="w-3.5 h-3.5 text-lime-400" />
-                    <span>Download .MD</span>
-                  </button>
-
-                  <button
-                    onClick={() => downloadFile('policy.json', jsonContent, 'application/json')}
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700 hover:border-slate-600 transition-all"
-                  >
-                    <Download className="w-3.5 h-3.5 text-lime-400" />
-                    <span>Download JSON</span>
-                  </button>
+                    <option value="USDC">USDC</option>
+                    <option value="SOL">SOL</option>
+                    <option value="USD">USD</option>
+                  </select>
                 </div>
+                <span className="text-[10px] text-[#7A7F73] mt-0.5 block">Hard stop ceiling per run</span>
+              </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                  <span className="flex items-center gap-1">
-                    <Info className="w-3 h-3 text-slate-400" />
-                    <span>Paste into AGENTS.md or System Prompt</span>
-                  </span>
-                  <span className="font-mono text-lime-400">Spec v1.0.0</span>
-                </div>
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#575B52] mb-1 flex items-center gap-1">
+                  <ShieldAlert className="w-3 h-3 text-[#697255]" />
+                  <span>Always Require Approval For</span>
+                </label>
+                <input
+                  type="text"
+                  value={policy.boundaries.approvalRequiredActions}
+                  onChange={e => updateBoundary('approvalRequiredActions', e.target.value)}
+                  placeholder="git push --force, rm -rf"
+                  className="w-full px-3 py-1.5 rounded border border-[#D5D1C3] bg-[#F3F1EA] font-mono text-xs text-[#20231F] focus:outline-none focus:border-[#D65A31]"
+                />
+                <span className="text-[10px] text-[#7A7F73] mt-0.5 block">High-consequence commands</span>
               </div>
             </div>
 
-            {/* Quick Compatibility Note */}
-            <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 text-xs text-slate-400 leading-relaxed">
-              <span className="font-semibold text-slate-300">Format Portability:</span> This export follows standard Markdown and structured JSON. Compatible with Cursor, Claude Code, Cline, Windsurf, AutoGPT, custom Python/Node agent harnesses, and team repositories.
+            <div>
+              <label className="block font-mono text-[11px] uppercase tracking-wider text-[#575B52] mb-1 flex items-center gap-1">
+                <Octagon className="w-3 h-3 text-[#9A3215]" />
+                <span>Automated Stop Conditions</span>
+              </label>
+              <input
+                type="text"
+                value={policy.boundaries.stopConditions}
+                onChange={e => updateBoundary('stopConditions', e.target.value)}
+                placeholder="Encountering API keys, 3 consecutive errors, or user issuing STOP"
+                className="w-full px-3 py-1.5 rounded border border-[#D5D1C3] bg-[#F3F1EA] font-mono text-xs text-[#20231F] focus:outline-none focus:border-[#D65A31]"
+              />
+              <span className="text-[10px] text-[#7A7F73] mt-0.5 block">Immediate execution abort trigger</span>
+            </div>
+
+            {/* Reset Action */}
+            <div className="pt-3 border-t border-[#D5D1C3] flex items-center justify-between text-xs">
+              <span className="text-[#575B52]">Discard changes and reset to factory defaults?</span>
+              {showResetConfirm ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-[#9A3215] font-semibold">Confirm?</span>
+                  <button
+                    onClick={resetToDefaults}
+                    className="px-2 py-0.5 rounded bg-[#9A3215] text-[#FFFFFF] font-bold text-[11px]"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    className="px-2 py-0.5 rounded border border-[#D5D1C3] bg-[#FFFFFF] text-[#20231F] text-[11px]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  className="inline-flex items-center gap-1 text-[11px] font-mono text-[#575B52] hover:text-[#9A3215]"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset All</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Generated Document-like Policy Preview (5 cols) */}
+        <div
+          className={`lg:col-span-5 lg:sticky lg:top-8 space-y-4 ${
+            mobileView === 'edit' ? 'hidden sm:block' : 'block'
+          }`}
+        >
+          <div className="bg-[#FFFFFF] border border-[#D5D1C3] rounded shadow-sm flex flex-col">
+            {/* Document Header & Formats */}
+            <div className="p-4 border-b border-[#D5D1C3] bg-[#EBE8DE]/50 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[#7A7F73]">
+                  Generated Policy Document
+                </div>
+                <div className="text-xs font-bold text-[#20231F] font-mono">
+                  {policy.name.toUpperCase()} (Rev. {policy.version})
+                </div>
+              </div>
+
+              {/* Format Toggles */}
+              <div className="flex items-center gap-1 rounded border border-[#D5D1C3] bg-[#FFFFFF] p-0.5">
+                <button
+                  onClick={() => setActiveTab('preview')}
+                  className={`px-2 py-1 rounded text-[11px] font-mono transition-colors ${
+                    activeTab === 'preview'
+                      ? 'bg-[#20231F] text-[#F3F1EA] font-semibold'
+                      : 'text-[#575B52] hover:text-[#20231F]'
+                  }`}
+                >
+                  Markdown
+                </button>
+                <button
+                  onClick={() => setActiveTab('json')}
+                  className={`px-2 py-1 rounded text-[11px] font-mono transition-colors ${
+                    activeTab === 'json'
+                      ? 'bg-[#20231F] text-[#F3F1EA] font-semibold'
+                      : 'text-[#575B52] hover:text-[#20231F]'
+                  }`}
+                >
+                  JSON Spec
+                </button>
+                <button
+                  onClick={() => setActiveTab('plain')}
+                  className={`px-2 py-1 rounded text-[11px] font-mono transition-colors ${
+                    activeTab === 'plain'
+                      ? 'bg-[#20231F] text-[#F3F1EA] font-semibold'
+                      : 'text-[#575B52] hover:text-[#20231F]'
+                  }`}
+                >
+                  Plain Text
+                </button>
+              </div>
+            </div>
+
+            {/* Document Surface */}
+            <div className="p-4 font-mono text-[11px] text-[#20231F] bg-[#FFFFFF] overflow-x-auto max-h-[480px] select-text border-b border-[#D5D1C3] leading-relaxed">
+              {activeTab === 'preview' && (
+                <pre className="whitespace-pre-wrap">{markdownContent}</pre>
+              )}
+              {activeTab === 'json' && (
+                <pre className="text-[#20231F] whitespace-pre-wrap">{jsonContent}</pre>
+              )}
+              {activeTab === 'plain' && (
+                <pre className="whitespace-pre-wrap">{plainTextContent}</pre>
+              )}
+            </div>
+
+            {/* Document Actions Bar */}
+            <div className="p-3.5 bg-[#F3F1EA] flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const text =
+                      activeTab === 'json'
+                        ? jsonContent
+                        : activeTab === 'plain'
+                        ? plainTextContent
+                        : markdownContent;
+                    handleCopy(text, activeTab);
+                  }}
+                  className="px-3 py-1.5 rounded bg-[#20231F] text-[#F3F1EA] font-semibold text-xs inline-flex items-center gap-1.5 hover:bg-[#343831] transition-colors"
+                >
+                  {copiedType === activeTab ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-[#A3E635]" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy Document</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => downloadFile('policy.md', markdownContent, 'text/markdown')}
+                  className="px-2.5 py-1.5 rounded border border-[#D5D1C3] bg-[#FFFFFF] text-[#20231F] font-semibold text-xs hover:bg-[#EBE8DE] transition-colors inline-flex items-center gap-1"
+                >
+                  <Download className="w-3 h-3 text-[#697255]" />
+                  <span>.MD</span>
+                </button>
+
+                <button
+                  onClick={() => downloadFile('policy.json', jsonContent, 'application/json')}
+                  className="px-2.5 py-1.5 rounded border border-[#D5D1C3] bg-[#FFFFFF] text-[#20231F] font-semibold text-xs hover:bg-[#EBE8DE] transition-colors inline-flex items-center gap-1"
+                >
+                  <Download className="w-3 h-3 text-[#697255]" />
+                  <span>JSON</span>
+                </button>
+              </div>
+
+              <span className="text-[10px] font-mono text-[#7A7F73]">
+                Portable standard
+              </span>
             </div>
           </div>
         </div>

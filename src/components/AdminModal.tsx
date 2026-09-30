@@ -34,75 +34,77 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUpdat
       return;
     }
     onUpdateMint(mintInput.trim(), pumpUrlInput.trim() || undefined);
-    setSuccessMsg('Contract address and market links updated successfully!');
+    setSuccessMsg('Contract address applied successfully.');
     setTimeout(() => {
       onClose();
       setSuccessMsg('');
-    }, 1500);
+    }, 1200);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-      <div className="w-full max-w-md bg-[#0f131a] border border-slate-700 rounded-3xl p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#20231F]/70 backdrop-blur-xs">
+      <div className="w-full max-w-md bg-[#F3F1EA] border border-[#20231F] rounded p-6 shadow-xl relative text-xs">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-lg bg-slate-900 border border-slate-800"
+          className="absolute top-4 right-4 p-1 text-[#7A7F73] hover:text-[#20231F] rounded border border-[#D5D1C3] bg-[#FFFFFF]"
           aria-label="Close modal"
         >
           <X className="w-4 h-4" />
         </button>
 
         <div className="flex items-center gap-2 mb-4">
-          <KeyRound className="w-5 h-5 text-lime-400" />
-          <h3 className="text-lg font-bold text-white">Secret CA Updater</h3>
+          <KeyRound className="w-4 h-4 text-[#D65A31]" />
+          <h3 className="text-sm font-bold text-[#20231F] font-mono uppercase tracking-wider">
+            Operator CA Control
+          </h3>
         </div>
 
         {!authenticated ? (
-          <form onSubmit={handleAuth} className="space-y-4">
-            <p className="text-xs text-slate-400">
-              Enter administrator passcode to configure dynamic contract details.
+          <form onSubmit={handleAuth} className="space-y-3">
+            <p className="text-[11px] text-[#575B52]">
+              Enter administrator passcode to configure dynamic contract address details.
             </p>
             <div>
               <input
                 type="password"
                 value={passcode}
                 onChange={e => setPasscode(e.target.value)}
-                placeholder="Passcode"
-                className="w-full px-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-lime-400"
+                placeholder="Master Passcode"
+                className="w-full px-3 py-2 rounded border border-[#D5D1C3] bg-[#FFFFFF] text-[#20231F] font-mono text-xs focus:outline-none focus:border-[#D65A31]"
                 autoFocus
               />
             </div>
             {errorMsg && (
-              <div className="text-xs text-rose-400 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" />
+              <div className="text-[11px] text-[#9A3215] flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
                 <span>{errorMsg}</span>
               </div>
             )}
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-lime-400 text-slate-950 font-bold text-xs hover:bg-lime-300 transition-colors"
+              className="w-full py-2 rounded bg-[#D65A31] text-[#FFFFFF] font-bold text-xs hover:bg-[#C04A22] transition-colors"
             >
-              Verify Passcode
+              Verify Credentials
             </button>
           </form>
         ) : (
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} className="space-y-3">
             <div>
-              <label className="block text-xs font-mono text-slate-400 mb-1">
-                Solana Mint Address (CA)
+              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#575B52] mb-1">
+                Solana Mint Contract Address (CA)
               </label>
               <input
                 type="text"
                 value={mintInput}
                 onChange={e => setMintInput(e.target.value)}
                 placeholder="e.g. 7xKXtg...pump"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono focus:outline-none focus:border-lime-400"
+                className="w-full px-3 py-1.5 rounded border border-[#D5D1C3] bg-[#FFFFFF] text-[#20231F] font-mono text-xs focus:outline-none focus:border-[#D65A31]"
                 autoFocus
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-slate-400 mb-1">
+              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#575B52] mb-1">
                 Pump.fun Market URL (Optional)
               </label>
               <input
@@ -110,29 +112,29 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUpdat
                 value={pumpUrlInput}
                 onChange={e => setPumpUrlInput(e.target.value)}
                 placeholder="https://pump.fun/coin/..."
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono focus:outline-none focus:border-lime-400"
+                className="w-full px-3 py-1.5 rounded border border-[#D5D1C3] bg-[#FFFFFF] text-[#20231F] font-mono text-xs focus:outline-none focus:border-[#D65A31]"
               />
             </div>
 
             {errorMsg && (
-              <div className="text-xs text-rose-400 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" />
+              <div className="text-[11px] text-[#9A3215] flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {successMsg && (
-              <div className="text-xs text-emerald-400 flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5" />
+              <div className="text-[11px] text-[#2E5A36] flex items-center gap-1 font-semibold">
+                <Check className="w-3 h-3" />
                 <span>{successMsg}</span>
               </div>
             )}
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-lime-400 text-slate-950 font-bold text-xs hover:bg-lime-300 transition-colors"
+              className="w-full py-2 rounded bg-[#20231F] text-[#F3F1EA] font-bold text-xs hover:bg-[#343831] transition-colors"
             >
-              Save & Apply Contract
+              Apply Updates
             </button>
           </form>
         )}
