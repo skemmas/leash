@@ -29,11 +29,20 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUpdat
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mintInput.trim()) {
+    const cleanMint = mintInput.trim();
+    if (!cleanMint) {
       setErrorMsg('Please enter a valid mint address');
       return;
     }
-    onUpdateMint(mintInput.trim(), pumpUrlInput.trim() || undefined);
+    try {
+      localStorage.setItem('leash_ca_mint', cleanMint);
+      if (pumpUrlInput.trim()) {
+        localStorage.setItem('leash_ca_pump', pumpUrlInput.trim());
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    onUpdateMint(cleanMint, pumpUrlInput.trim() || undefined);
     setSuccessMsg('Contract address applied successfully.');
     setTimeout(() => {
       onClose();

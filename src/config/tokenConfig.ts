@@ -22,6 +22,31 @@ export interface TokenConfig {
   };
 }
 
+const getStoredMint = (): string | null => {
+  try {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('leash_ca_mint');
+    }
+  } catch {
+    // Ignore storage errors
+  }
+  return null;
+};
+
+const getStoredPumpUrl = (): string | null => {
+  try {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('leash_ca_pump');
+    }
+  } catch {
+    // Ignore storage errors
+  }
+  return null;
+};
+
+const storedMint = getStoredMint();
+const storedPump = getStoredPumpUrl();
+
 export const tokenConfig: TokenConfig = {
   name: "LEASH",
   ticker: "$LEASH",
@@ -29,20 +54,22 @@ export const tokenConfig: TokenConfig = {
   narrative:
     "AI agents are becoming more autonomous. People need a simple way to define what their agents can access, change, spend, and publish. LEASH makes those boundaries readable and reusable.",
   
-  // Set to null while provisional. No fabricated address or fake links.
-  mintAddress: null,
-  explorerUrl: null,
-  pumpFunUrl: null,
+  // Set to null while provisional unless loaded from persistent storage
+  mintAddress: storedMint || null,
+  explorerUrl: storedMint ? `https://solscan.io/token/${storedMint}` : null,
+  pumpFunUrl: storedPump || (storedMint ? `https://pump.fun/coin/${storedMint}` : null),
 
   socials: {
     twitter: "https://x.com",
-    github: "https://github.com",
+    github: "https://github.com/skemmas/leash",
     telegram: "",
   },
 
   status: {
-    isLaunched: false,
-    statusText: "Token not launched",
-    note: "Provisional community coin. The policy builder and instruction validator are 100% free and work right now in your browser without a wallet.",
+    isLaunched: Boolean(storedMint),
+    statusText: storedMint ? "Token Live" : "Token not launched",
+    note: storedMint
+      ? `Live CA: ${storedMint}`
+      : "Provisional community coin. The policy builder and instruction validator are 100% free and work right now in your browser without a wallet.",
   },
 };

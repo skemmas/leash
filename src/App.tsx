@@ -19,6 +19,10 @@ export const App: React.FC = () => {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const keyBuffer = useRef<string>('');
 
+  // Track live CA mint address and Pump URL
+  const [mintAddress, setMintAddress] = useState<string | null>(tokenConfig.mintAddress);
+  const [pumpFunUrl, setPumpFunUrl] = useState<string | null>(tokenConfig.pumpFunUrl);
+
   // Track live policy metrics for the sidebar widget
   const [policySummary, setPolicySummary] = useState({
     allowed: Object.values(DEFAULT_POLICY.permissions).filter(v => v === 'allowed').length,
@@ -67,8 +71,10 @@ export const App: React.FC = () => {
 
   const handleUpdateMint = (newMint: string, newPumpUrl?: string) => {
     tokenConfig.mintAddress = newMint;
+    setMintAddress(newMint);
     if (newPumpUrl) {
       tokenConfig.pumpFunUrl = newPumpUrl;
+      setPumpFunUrl(newPumpUrl);
     }
     tokenConfig.status.isLaunched = true;
     tokenConfig.status.statusText = 'Token Live';
@@ -77,23 +83,31 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F3F1EA] text-[#20231F] flex flex-col md:flex-row selection:bg-[#D65A31] selection:text-white">
-      {/* Asymmetric Desktop Left Rail */}
+      {/* Asymmetric Desktop Left Rail with prominent CA module */}
       <div className="hidden md:block">
         <SidebarRail
           policySummary={policySummary}
           agentName={activeAgentName}
           lastSaved={lastSavedTime}
+          mintAddress={mintAddress}
+          pumpFunUrl={pumpFunUrl}
         />
       </div>
 
       {/* Main Workspace Area */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Mobile Navigation Header */}
-        <Navbar />
+        {/* Mobile Navigation Header with prominent compact CA */}
+        <Navbar
+          mintAddress={mintAddress}
+          pumpFunUrl={pumpFunUrl}
+        />
 
         {/* Content Canvas */}
         <main className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 space-y-12 flex-1">
-          <Hero />
+          <Hero
+            mintAddress={mintAddress}
+            pumpFunUrl={pumpFunUrl}
+          />
           <HowItWorks />
           <PermissionBuilder onPolicyChange={handlePolicyChange} />
           <PolicyCheck />

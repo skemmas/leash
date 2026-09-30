@@ -1,5 +1,6 @@
 import React from 'react';
 import { WatchdogMascot } from './WatchdogMascot';
+import { ContractAddressBar } from './ContractAddressBar';
 import { tokenConfig } from '../config/tokenConfig';
 import {
   Sliders,
@@ -20,6 +21,8 @@ interface SidebarRailProps {
   };
   agentName?: string;
   lastSaved?: string;
+  mintAddress?: string | null;
+  pumpFunUrl?: string | null;
 }
 
 export const SidebarRail: React.FC<SidebarRailProps> = ({
@@ -27,6 +30,8 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
   policySummary = { allowed: 2, askFirst: 4, blocked: 2 },
   agentName = 'Watchdog-Alpha',
   lastSaved = 'Draft ready',
+  mintAddress = tokenConfig.mintAddress,
+  pumpFunUrl = tokenConfig.pumpFunUrl,
 }) => {
   const navItems = [
     { id: 'builder', label: 'Permission Builder', step: '01', icon: Sliders },
@@ -39,9 +44,9 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
 
   return (
     <aside className="w-64 xl:w-72 border-r border-[#D5D1C3] bg-[#EBE8DE]/70 flex flex-col justify-between shrink-0 p-5 sticky top-0 h-screen overflow-y-auto">
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Brand Header */}
-        <div className="border-b border-[#D5D1C3] pb-4">
+        <div className="border-b border-[#D5D1C3] pb-3">
           <div className="flex items-center gap-2.5 mb-2">
             <WatchdogMascot size="sm" variant="emblem" />
             <div className="flex items-baseline gap-2">
@@ -55,6 +60,13 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
             {tokenConfig.tagline}
           </p>
         </div>
+
+        {/* High-Visibility CA Module in Left Sidebar */}
+        <ContractAddressBar
+          variant="sidebar"
+          mintAddress={mintAddress ?? null}
+          pumpFunUrl={pumpFunUrl ?? null}
+        />
 
         {/* Section Navigation */}
         <nav className="space-y-1">
@@ -87,7 +99,7 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
         </nav>
 
         {/* Compact Policy Telemetry Widget */}
-        <div className="p-3.5 rounded border border-[#D5D1C3] bg-[#FFFFFF] space-y-2.5 shadow-sm">
+        <div className="p-3 rounded border border-[#D5D1C3] bg-[#FFFFFF] space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-[10px] font-mono text-[#7A7F73] uppercase tracking-wider">
             <span>Active Spec</span>
             <span className="text-[#D65A31] font-semibold">Spec v1.0</span>
@@ -102,7 +114,7 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[#EBE8DE] flex items-center justify-between text-[10px] font-mono text-[#7A7F73]">
+          <div className="pt-1.5 border-t border-[#EBE8DE] flex items-center justify-between text-[10px] font-mono text-[#7A7F73]">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#697255]" />
               <span>{lastSaved}</span>
@@ -111,20 +123,6 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
               Edit →
             </a>
           </div>
-        </div>
-
-        {/* Token State */}
-        <div className="p-3 rounded border border-[#D5D1C3] bg-[#EBE8DE] text-xs space-y-1">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-[#7A7F73]">
-            Network Status
-          </div>
-          <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-[#20231F]">
-            <span className="w-2 h-2 rounded-full bg-[#D65A31]" />
-            <span>{tokenConfig.status.statusText}</span>
-          </div>
-          <p className="text-[11px] text-[#575B52] leading-tight pt-1">
-            Builder and checker are 100% free and run locally in browser.
-          </p>
         </div>
       </div>
 

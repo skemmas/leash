@@ -1,10 +1,21 @@
+import React from 'react';
 import { ArrowDown, Terminal, Lock } from 'lucide-react';
+import { ContractAddressBar } from './ContractAddressBar';
+import { tokenConfig } from '../config/tokenConfig';
 
-export const Hero: React.FC = () => {
+interface HeroProps {
+  mintAddress?: string | null;
+  pumpFunUrl?: string | null;
+}
+
+export const Hero: React.FC<HeroProps> = ({
+  mintAddress = tokenConfig.mintAddress,
+  pumpFunUrl = tokenConfig.pumpFunUrl,
+}) => {
   return (
-    <section className="border-b border-[#D5D1C3] pb-10 pt-4">
+    <section className="border-b border-[#D5D1C3] pb-10 pt-4 space-y-6">
       {/* Top Meta Line */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-6 border-b border-[#D5D1C3]/80 text-[11px] font-mono text-[#575B52]">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#D5D1C3]/80 text-[11px] font-mono text-[#575B52]">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#D65A31]" />
           <span className="uppercase tracking-wider font-semibold text-[#20231F]">
@@ -57,6 +68,15 @@ export const Hero: React.FC = () => {
             <span>Zero telemetry · Runs offline</span>
           </div>
         </div>
+      </div>
+
+      {/* Prominent High-Visibility Contract Address Bar in Hero */}
+      <div className="pt-2">
+        <ContractAddressBar
+          variant="hero"
+          mintAddress={mintAddress ?? null}
+          pumpFunUrl={pumpFunUrl ?? null}
+        />
       </div>
     </section>
   );

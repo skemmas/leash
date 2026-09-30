@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import { WatchdogMascot } from './WatchdogMascot';
+import { ContractAddressBar } from './ContractAddressBar';
 import { tokenConfig } from '../config/tokenConfig';
 import { Menu, X, Sliders, Terminal, FileText, Clock, HelpCircle } from 'lucide-react';
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  mintAddress?: string | null;
+  pumpFunUrl?: string | null;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({
+  mintAddress = tokenConfig.mintAddress,
+  pumpFunUrl = tokenConfig.pumpFunUrl,
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -28,9 +37,14 @@ export const Navbar: React.FC = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
+          <ContractAddressBar
+            variant="compact"
+            mintAddress={mintAddress ?? null}
+            pumpFunUrl={pumpFunUrl ?? null}
+          />
           <a
             href="#builder"
-            className="px-2.5 py-1 rounded bg-[#D65A31] text-[#FFFFFF] font-semibold text-[11px] hover:bg-[#C04A22] transition-colors"
+            className="px-2 py-1 rounded bg-[#D65A31] text-[#FFFFFF] font-semibold text-[11px] hover:bg-[#C04A22] transition-colors"
           >
             Builder
           </a>
@@ -46,7 +60,15 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="mt-3 pt-3 border-t border-[#D5D1C3] space-y-1 text-xs font-mono">
+        <div className="mt-3 pt-3 border-t border-[#D5D1C3] space-y-2 text-xs font-mono">
+          <div className="p-2 rounded bg-[#FFFFFF] border border-[#D5D1C3]">
+            <ContractAddressBar
+              variant="sidebar"
+              mintAddress={mintAddress ?? null}
+              pumpFunUrl={pumpFunUrl ?? null}
+            />
+          </div>
+
           <div className="px-2 py-1 text-[10px] text-[#7A7F73] uppercase font-bold">
             Navigation
           </div>
